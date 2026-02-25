@@ -1,8 +1,8 @@
 import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { loginDto } from './Dto/loginDto';
-import { AuthGuard } from '@nestjs/passport';
 import { Response } from 'express';
+import { JwtGuard } from './jwtGuard';
 
 @Controller('auth')
 export class AuthController {
@@ -21,10 +21,10 @@ export class AuthController {
         return {message:'successful login',user}
     }
 
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(JwtGuard)
     @Post('logout')
     async logout(@Res({passthrough:true}) res:Response){
         res.cookie('user_token','',{expires:new Date(0)})
-        return await this.authService.logout()
+        return {message:'користувач успішно вийшов'}
     }
 }
