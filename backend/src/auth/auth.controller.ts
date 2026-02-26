@@ -23,6 +23,7 @@ export class AuthController {
 
     @UseGuards(JwtGuard)
     @Post('logout')
+    
     async logout(@Res({passthrough:true}) res:Response){
         res.cookie('user_token','',{expires:new Date(0)})
         return {message:'користувач успішно вийшов'}
