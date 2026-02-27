@@ -1,33 +1,33 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-  extensions = [postgis]
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DIRECT_URL")
+  extensions = [postgis, uuid_ossp(map: "uuid-ossp", schema: "extensions")]
 }
 
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  password  String
   name      String?
-  role      String  @default("ADMIN")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  password  String
+  role      String   @default("ADMIN")
 }
 
 model TaxJurisdiction {
-  id    String               @id @default(cuid())
+  id    String                  @id @default(cuid())
   name  String
   level JurisdictionLevel
-  rate  Decimal              @db.Decimal(5, 5)
+  rate  Decimal                 @db.Decimal(5, 5)
+  geom  Unsupported("geometry")
 
-  geom  Unsupported("geometry(MultiPolygon, 4326)")
-
+  @@index([geom], type: Gist)
   @@map("tax_jurisdictions")
 }
 
@@ -36,17 +36,24 @@ model Order {
   subtotal           Decimal  @db.Decimal(10, 2)
   lat                Decimal  @db.Decimal(10, 7)
   lon                Decimal  @db.Decimal(10, 7)
-  
   composite_tax_rate Decimal  @db.Decimal(6, 5)
   tax_amount         Decimal  @db.Decimal(10, 2)
   total_amount       Decimal  @db.Decimal(10, 2)
-  
   breakdown          Json
   jurisdictions      String[]
-  
-  timestamp          DateTime @default(now()) @db.Timestamptz()
+  timestamp          DateTime @default(now()) @db.Timestamptz(6)
+  status             Boolean  @default(true)
 
   @@map("orders")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model spatial_ref_sys {
+  srid      Int     @id
+  auth_name String? @db.VarChar(256)
+  auth_srid Int?
+  srtext    String? @db.VarChar(2048)
+  proj4text String? @db.VarChar(2048)
 }
 
 enum JurisdictionLevel {
