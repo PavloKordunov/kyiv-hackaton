@@ -1,17 +1,57 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+  extensions = [postgis]
 }
 
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
+  password  String
   name      String?
+  role      String  @default("ADMIN")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model TaxJurisdiction {
+  id    String               @id @default(cuid())
+  name  String
+  level JurisdictionLevel
+  rate  Decimal              @db.Decimal(5, 5)
+
+  geom  Unsupported("geometry(MultiPolygon, 4326)")
+
+  @@map("tax_jurisdictions")
+}
+
+model Order {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  subtotal           Decimal  @db.Decimal(10, 2)
+  lat                Decimal  @db.Decimal(10, 7)
+  lon                Decimal  @db.Decimal(10, 7)
+  
+  composite_tax_rate Decimal  @db.Decimal(6, 5)
+  tax_amount         Decimal  @db.Decimal(10, 2)
+  total_amount       Decimal  @db.Decimal(10, 2)
+  
+  breakdown          Json
+  jurisdictions      String[]
+  
+  timestamp          DateTime @default(now()) @db.Timestamptz()
+
+  @@map("orders")
+}
+
+enum JurisdictionLevel {
+  state
+  county
+  city
+  special
 }
