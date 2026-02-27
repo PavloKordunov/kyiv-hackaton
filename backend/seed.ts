@@ -47,7 +47,7 @@ const TAX_RATES = {
     Putnam: 0.04,
     Rensselaer: 0.04,
     Rockland: 0.04,
-    'St. Lawrence': 0.04,
+    'St Lawrence': 0.04,
     Saratoga: 0.03,
     Schenectady: 0.04,
     Schoharie: 0.04,
@@ -101,7 +101,6 @@ const MCTD_COUNTIES = [
 ];
 
 async function processGeoJSON(filePath: string) {
-  console.log(`\nОбробка файлу: ${filePath}...`);
   const geojsonRaw = fs.readFileSync(filePath, 'utf-8');
   const geojson = JSON.parse(geojsonRaw);
 

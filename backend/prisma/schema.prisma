@@ -43,6 +43,8 @@ model Order {
   
   breakdown          Json
   jurisdictions      String[]
+
+  status             Boolean   @default(true)
   
   timestamp          DateTime @default(now()) @db.Timestamptz()
 
