@@ -18,39 +18,44 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Get('report/pdf')
-    async downloadPdfReport(
-      @Query() query: GetOrdersFilterDto,
-      @Res() res: Response,
-    ) {
-      try {
-        const pdfBuffer = await this.ordersService.generatePdfReport(query);
+  async downloadPdfReport(
+    @Query() query: GetOrdersFilterDto,
+    @Res() res: Response,
+  ) {
+    try {
+      const pdfBuffer = await this.ordersService.generatePdfReport(query);
 
-        res.set({
-          'Content-Type': 'application/pdf',
-          'Content-Disposition': `attachment; filename="wellness_kits_report_${Date.now()}.pdf"`,
-          'Content-Length': pdfBuffer.length.toString(),
-        });
+      res.set({
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="wellness_kits_report_${Date.now()}.pdf"`,
+        'Content-Length': pdfBuffer.length.toString(),
+      });
 
-        res.end(pdfBuffer);
-      } catch (error) {
-        console.error('Помилка генерації PDF:', error);
-        throw new BadRequestException('Не вдалося згенерувати PDF звіт');
-      }
+      res.end(pdfBuffer);
+    } catch (error) {
+      console.error('Помилка генерації PDF:', error);
+      throw new BadRequestException('Не вдалося згенерувати PDF звіт');
+    }
+  }
+
+  @Get()
+  async getOrders(@Query() query: GetOrdersFilterDto) {
+    return this.ordersService.getOrders(query);
+  }
+
+  @Get('heatmap')
+  async getHeatmap() {
+    return this.ordersService.getHeatmapData();
+  }
+
+  @Post('import')
+  @UseInterceptors(FileInterceptor('file'))
+  async importCsv(@UploadedFile() file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Файл не знайдено');
     }
 
-    @Get()
-    async getOrders(@Query() query: GetOrdersFilterDto) {
-      return this.ordersService.getOrders(query);
-    }
-
-    @Post('import')
-    @UseInterceptors(FileInterceptor('file'))
-    async importCsv(@UploadedFile() file: Express.Multer.File) {
-      if (!file) {
-        throw new BadRequestException('Файл не знайдено');
-      }
-
-      const result = await this.ordersService.importCsv(file.buffer);
-      return result;
-    }
+    const result = await this.ordersService.importCsv(file.buffer);
+    return result;
+  }
 }
