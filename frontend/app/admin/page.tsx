@@ -94,7 +94,7 @@ export default function AdminPage() {
           />
         </div>
 
-        <RecentActivity activities={activities} />
+        <RecentActivity />
       </main>
     </div>
   );
