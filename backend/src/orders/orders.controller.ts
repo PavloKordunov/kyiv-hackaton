@@ -4,6 +4,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Get,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { OrdersService } from './orders.service';
@@ -21,5 +22,15 @@ export class OrdersController {
 
     const result = await this.ordersService.importCsv(file.buffer);
     return result;
+  }
+
+  @Get('taxes')
+  async getChartData(){
+    return await this.ordersService.GetChartData()
+  }
+
+  @Get('stats')
+  async getStats(){
+    return await this.ordersService.getDashBordStats()
   }
 }
