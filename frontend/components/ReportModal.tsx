@@ -39,8 +39,9 @@ const ReportModal = ({ onClose }: { onClose: () => void }) => {
         params.append("county", county.value);
       });
 
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
       const res = await fetch(
-        `http://localhost:8080/api/orders/report/pdf?${params.toString()}`
+        `${API_URL}/api/orders/report/pdf?${params.toString()}`
       );
 
       if (!res.ok) {

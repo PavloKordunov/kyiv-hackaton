@@ -65,9 +65,9 @@ export default function OrdersPage() {
       setIsLoading(true);
       try {
         const queryString = searchParams.toString();
-
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
         const response = await fetch(
-          `http://localhost:8080/api/orders?${queryString}`,
+          `${API_URL}/api/orders?${queryString}`,
         );
         const result = await response.json();
         if (result.data) {
