@@ -94,9 +94,10 @@ const [statsData,setStatsData]=useState({
 useEffect(()=>{
   const fetchChartData=async()=>{
     try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
       const [chartRes,statsRes]=await Promise.all([
-         fetch('http://localhost:8080/api/orders/taxes'),
-         fetch('http://localhost:8080/api/orders/stats')
+         fetch(`${API_URL}/api/orders/taxes`),
+         fetch(`${API_URL}/api/orders/stats`)
       ])
         
       if(chartRes.ok){
