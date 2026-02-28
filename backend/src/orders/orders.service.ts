@@ -442,4 +442,65 @@ export class OrdersService {
       FROM raw_aggregates;
     `;
   }
+  async GetChartData(){
+    const rawData=await this.prisma.$queryRaw<any[]>`
+    SELECT 
+    DATE(timestamp) AS order_date,
+    CAST(COUNT(id) AS INTEGER) AS order_count,
+    COALESCE(SUM(tax_amount),0) AS taxes_total
+    FROM orders
+    WHERE timestamp>=NOW() - INTERVAL '6 days'
+     AND status=true
+     GROUP BY DATE(timestamp)
+     ORDER BY DATE(timestamp) ASC;
+    `;
+    const daysMap=['Нд', 'Пн', 'Вв', 'Ср', 'Чт', 'Пт', 'Сб'];
+    const last7Days:{dateString:string;dayIndex:number}[]=[]
+    for(let i=6;i>=0;i--){
+      const d=new Date()
+      d.setDate(d.getDate()-i)
+      const dateString=d.toISOString().split('T')[0]
+      last7Days.push({
+        dateString,
+        dayIndex:d.getDay()
+      })
+    }
+    return last7Days.map((dayInfo)=>{
+      const foundData=rawData.find((row)=>{
+        const rowDate=new Date(row.order_date).toISOString().split('T')[0]
+        return rowDate===dayInfo.dateString;
+      })
+
+      return {
+        name:daysMap[dayInfo.dayIndex],
+        orders:foundData ? Number(foundData.order_count) :0,
+        taxes:foundData ? Number(Number(foundData.taxes_total).toFixed(2)):0,
+      }
+    })
+  }
+
+  async getDashBordStats(){
+    const ordersStats=await this.prisma.order.aggregate({
+      where:{status:true},
+      _count:{
+        id:true
+      },
+      _sum:{
+        tax_amount:true
+      },
+      _avg:{
+        composite_tax_rate:true,
+        total_amount:true
+      }
+    });
+    const taxZonesCount=await this.prisma.taxJurisdiction.count()
+
+    return {
+      totalOrders:ordersStats._count.id || 0,
+      totalTaxes:Number(ordersStats._sum.tax_amount || 0),
+      taxZones:taxZonesCount,
+      avgOrderValue:Number(ordersStats._avg.total_amount || 0),
+      avgTaxRate:Number(ordersStats._avg.composite_tax_rate || 0)*100
+    }
+  }
 }
