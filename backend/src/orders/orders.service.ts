@@ -2,10 +2,53 @@ import { Injectable } from '@nestjs/common';
 import * as csv from 'csv-parser';
 import { Readable } from 'stream';
 import { DatabaseService } from 'src/database/database.service';
+import { GetOrdersFilterDto } from './dto/getOrdersFilterDto';
 
 @Injectable()
 export class OrdersService {
   constructor(private prisma: DatabaseService) {}
+
+  async getOrders(filter: GetOrdersFilterDto) {
+    const { page, limit, county, fromDate, toDate } = filter;
+
+    const where: any = {};
+
+    if (county && county.length > 0) {
+      where.jurisdictions = {
+        hasSome: county,
+      };
+    }
+
+    if (fromDate || toDate) {
+      where.timestamp = {};
+      
+      if (fromDate) {
+        where.timestamp.gte = fromDate;
+      }
+      if (toDate) {
+        where.timestamp.lte = toDate;
+      }
+    }
+
+    const [orders, count] = await Promise.all([
+      this.prisma.order.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: { timestamp: 'desc' },
+      }),
+      this.prisma.order.count({ where })
+    ]);
+    return {
+      data: orders,
+      meta:{
+        total: count,
+        page,
+        limit,
+        totalPages: Math.ceil(count / limit)
+      }
+    };
+  }
 
   async importCsv(
     fileBuffer: Buffer,
