@@ -9,20 +9,19 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  async login(
-    @Body() dto: loginDto,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    const { user, token } = await this.authService.login(dto);
-
-    res.cookie('user_token', token.accessToken, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none',
-      expires: new Date(Date.now() + 3600000),
-    });
-
-    return { message: 'successful login', user };
+  async login(@Body() dto: loginDto, @Res({ passthrough: true }) res: Response) {
+      const result = await this.authService.login(dto);
+      res.cookie('token', result.token.accessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+          maxAge: 24 * 60 * 60 * 1000,
+      });
+      
+      return { 
+          message: 'logged', 
+          token: result.token.accessToken 
+      }; 
   }
 
   @UseGuards(JwtGuard)
