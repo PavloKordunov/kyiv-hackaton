@@ -20,6 +20,11 @@ export class OrdersController {
     return this.ordersService.getOrders(query);
   }
 
+  @Get('heatmap')
+  async getHeatmap() {
+    return this.ordersService.getHeatmapData();
+  }
+
   @Post('import')
   @UseInterceptors(FileInterceptor('file'))
   async importCsv(@UploadedFile() file: Express.Multer.File) {

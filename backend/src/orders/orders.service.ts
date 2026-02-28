@@ -8,6 +8,37 @@ import { GetOrdersFilterDto } from './dto/getOrdersFilterDto';
 export class OrdersService {
   constructor(private prisma: DatabaseService) {}
 
+  async getHeatmapData() {
+    const result = await this.prisma.$queryRaw`
+      WITH county_geoms AS (
+        SELECT name, ST_Centroid(ST_Union(geom)) as centroid
+        FROM tax_jurisdictions
+        WHERE level = 'county'
+        GROUP BY name
+      ),
+      county_stats AS (
+        SELECT 
+          j_name AS county,
+          COUNT(id)::int AS order_count,
+          SUM(tax_amount)::float AS total_tax
+        FROM orders, unnest(jurisdictions) AS j_name
+        WHERE status = true
+        GROUP BY j_name
+      )
+      SELECT 
+        cg.name AS county,
+        COALESCE(cs.order_count, 0)::int AS order_count,
+        COALESCE(cs.total_tax, 0)::float AS total_tax,
+        ST_Y(cg.centroid)::float AS lat,
+        ST_X(cg.centroid)::float AS lon
+      FROM county_geoms cg
+      INNER JOIN county_stats cs ON cg.name = cs.county
+      WHERE cs.total_tax > 0;
+    `;
+
+    return result;
+  }
+
   async getOrders(filter: GetOrdersFilterDto) {
     const { page, limit, county, fromDate, toDate } = filter;
 
@@ -21,7 +52,7 @@ export class OrdersService {
 
     if (fromDate || toDate) {
       where.timestamp = {};
-      
+
       if (fromDate) {
         where.timestamp.gte = fromDate;
       }
@@ -37,16 +68,16 @@ export class OrdersService {
         take: limit,
         orderBy: { timestamp: 'desc' },
       }),
-      this.prisma.order.count({ where })
+      this.prisma.order.count({ where }),
     ]);
     return {
       data: orders,
-      meta:{
+      meta: {
         total: count,
         page,
         limit,
-        totalPages: Math.ceil(count / limit)
-      }
+        totalPages: Math.ceil(count / limit),
+      },
     };
   }
 
