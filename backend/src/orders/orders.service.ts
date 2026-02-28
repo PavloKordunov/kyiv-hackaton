@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as csv from 'csv-parser';
 import { Readable } from 'stream';
+import { Prisma } from '@prisma/client';
 import { DatabaseService } from 'src/database/database.service';
 import { GetOrdersFilterDto } from './dto/getOrdersFilterDto';
 
@@ -91,6 +92,107 @@ export class OrdersService {
             reject(error);
           }
         });
+    });
+  }
+
+  async generatePdfReport(filter: any): Promise<Buffer> {
+    const { county, fromDate, toDate } = filter;
+
+    const baseWhere: Prisma.OrderWhereInput = {};
+    if (county && county.length > 0) {
+      baseWhere.jurisdictions = { hasSome: county };
+    }
+    if (fromDate || toDate) {
+      baseWhere.timestamp = {};
+      if (fromDate) baseWhere.timestamp.gte = new Date(fromDate);
+      if (toDate) baseWhere.timestamp.lte = new Date(toDate);
+    }
+
+    const validOrdersWhere: Prisma.OrderWhereInput = { ...baseWhere, status: true };
+    const outOfStateWhere: Prisma.OrderWhereInput = { ...baseWhere, status: false };
+
+    const [aggregates, outOfStateCount, firstOrder, lastOrder] = await Promise.all([
+      this.prisma.order.aggregate({
+        where: validOrdersWhere,
+        _sum: { subtotal: true, tax_amount: true, total_amount: true },
+        _avg: { composite_tax_rate: true, total_amount: true },
+        _count: { id: true }
+      }),
+      this.prisma.order.count({ where: outOfStateWhere }),
+      this.prisma.order.findFirst({ where: validOrdersWhere, orderBy: { timestamp: 'asc' } }),
+      this.prisma.order.findFirst({ where: validOrdersWhere, orderBy: { timestamp: 'desc' } })
+    ]);
+
+    const reportStartDate = fromDate ? new Date(fromDate) : firstOrder?.timestamp;
+    const reportEndDate = toDate ? new Date(toDate) : lastOrder?.timestamp;
+    const formatDate = (date?: Date) => date ? date.toLocaleDateString('uk-UA') : 'N/A';
+
+    const totalSubtotal = Number(aggregates._sum.subtotal || 0).toFixed(2);
+    const totalTax = Number(aggregates._sum.tax_amount || 0).toFixed(2);
+    const totalRevenue = Number(aggregates._sum.total_amount || 0).toFixed(2);
+    const avgOrderAmount = Number(aggregates._avg.total_amount || 0).toFixed(2);
+    const avgTaxRate = (Number(aggregates._avg.composite_tax_rate || 0) * 100).toFixed(3);
+
+    return new Promise((resolve, reject) => {
+      try {
+        const PDFDocument = require('pdfkit-table');
+        const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+        const buffers: Buffer[] = [];
+        doc.on('data', (chunk) => buffers.push(chunk));
+        doc.on('end', () => resolve(Buffer.concat(buffers)));
+        doc.on('error', (err) => reject(err));
+
+        doc.font('Helvetica-Bold').fontSize(22).text('INSTANT WELLNESS KITS');
+        doc.font('Helvetica').fontSize(14).fillColor('#666666').text('Sales & Tax Summary Report');
+        doc.moveDown(1.5);
+
+        doc.fillColor('black').fontSize(11);
+        doc.font('Helvetica-Bold').text('Report Period: ', { continued: true })
+           .font('Helvetica').text(`${formatDate(reportStartDate)} — ${formatDate(reportEndDate)}`);
+        
+        doc.font('Helvetica-Bold').text('Counties: ', { continued: true })
+           .font('Helvetica').text(county?.length ? county.join(', ') : 'All New York State');
+        
+        doc.font('Helvetica-Bold').text('Generated On: ', { continued: true })
+           .font('Helvetica').text(new Date().toLocaleString('uk-UA'));
+        doc.moveDown(2);
+
+        const table = {
+          title: "EXECUTIVE SUMMARY",
+          headers: ["Metric", "Value"],
+          rows: [
+            ["Total Valid Orders", aggregates._count.id.toString()],
+            ["Out-of-State Orders (Failed)", outOfStateCount.toString()],
+            ["Average Order Amount", `$${avgOrderAmount}`],
+            ["Average Tax Rate", `${avgTaxRate}%`],
+            ["Total Subtotal", `$${totalSubtotal}`],
+            ["Total Tax Collected", `$${totalTax}`],
+            ["TOTAL REVENUE", `$${totalRevenue}`],
+          ],
+        };
+
+        // Малюємо таблицю
+        doc.table(table, {
+          width: 400,
+          prepareHeader: () => doc.font("Helvetica-Bold").fontSize(11),
+          prepareRow: (row) => {
+            doc.font("Helvetica").fontSize(11);
+            if (row[0] === "TOTAL REVENUE") {
+              doc.font("Helvetica-Bold");
+            }
+          },
+        }).then(() => {
+          doc.moveDown(2);
+          doc.font('Helvetica-Oblique').fontSize(9).fillColor('#666666')
+             .text('The average tax rate is calculated dynamically based on spatial GIS data covering the specific delivery coordinates. Out-of-state coordinates (outside NY boundaries) have been excluded from tax collection and are marked as failed.');
+          
+          doc.end();
+        }).catch(err => reject(err));
+        
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 
