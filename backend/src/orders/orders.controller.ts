@@ -68,4 +68,14 @@ export class OrdersController {
     const result = await this.ordersService.importCsv(file.buffer);
     return result;
   }
+
+  @Get('taxes')
+  async getChartData(){
+    return await this.ordersService.GetChartData()
+  }
+
+  @Get('stats')
+  async getStats(){
+    return await this.ordersService.getDashBordStats()
+  }
 }
