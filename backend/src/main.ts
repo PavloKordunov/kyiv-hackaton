@@ -7,16 +7,18 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.setGlobalPrefix('api');
   app.use(cookieParser());
-  app.useGlobalPipes(new ValidationPipe({
-      transform: true, 
-      whitelist: true, 
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
       transformOptions: {
         enableImplicitConversion: true,
       },
-  }));
+    }),
+  );
 
   app.enableCors({
-    origin: ['http://localhost:3000'],
+    origin: ['http://localhost:3000', 'https://kyiv-hackaton.vercel.app/'],
     credentials: true,
   });
 
