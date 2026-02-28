@@ -40,8 +40,9 @@ const ImportModal = ({ onClose }: { onClose: () => void }) => {
     const formData = new FormData();
     formData.append("file", file);
 
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
     try {
-      const res = await fetch("http://localhost:8080/api/orders/import", {
+      const res = await fetch(`${API_URL}/api/orders/import`, {
         method: "POST",
         body: formData,
       });
