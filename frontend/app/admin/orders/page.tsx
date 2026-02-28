@@ -23,6 +23,7 @@ import AdminHeader from "@/components/AdminHeader";
 import { useEffect, useRef, useState } from "react";
 import ImportModal from "@/components/ImportModal";
 import ReportModal from "@/components/ReportModal";
+import ManualOrderModal from "@/components/ManualOrderModal";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 import Select, { components } from "react-select";
@@ -39,6 +40,7 @@ const countyOptions = counties.map((county) => ({
 export default function OrdersPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -141,6 +143,7 @@ export default function OrdersPage() {
 
   const closeModal = () => setIsModalOpen(false);
   const closeReportModal = () => setIsReportModalOpen(false);
+  const closeManualModal = () => setIsManualModalOpen(false);
 
   return (
     <div className="flex flex-col h-full bg-[#F9FAFB] w-full">
@@ -168,7 +171,10 @@ export default function OrdersPage() {
               <Download className="w-4 h-4" />
               <span>Звіт PDF</span>
             </button>
-            <button className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium transition-colors text-sm">
+            <button
+              onClick={() => setIsManualModalOpen(true)}
+              className="cursor-pointer flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 font-medium transition-colors text-sm"
+            >
               <Plus className="w-4 h-4" />
               <span>Нове замовлення</span>
             </button>
@@ -190,6 +196,7 @@ export default function OrdersPage() {
 
           <div className="w-full sm:w-[300px] z-10">
             <Select
+              instanceId="county-select"
               isMulti
               options={countyOptions}
               value={selectedOptions}
@@ -432,6 +439,12 @@ export default function OrdersPage() {
       </main>
       {isModalOpen && <ImportModal onClose={closeModal} />}
       {isReportModalOpen && <ReportModal onClose={closeReportModal} />}
+      {isManualModalOpen && (
+        <ManualOrderModal
+          onClose={closeManualModal}
+          onSuccess={() => window.location.reload()}
+        />
+      )}
     </div>
   );
 }

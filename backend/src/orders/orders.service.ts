@@ -363,6 +363,19 @@ export class OrdersService {
     });
   }
 
+  async createManualOrder(data: { lat: number; lon: number; subtotal: number }) {
+    const orderData = {
+      lat: Number(data.lat),
+      lon: Number(data.lon),
+      subtotal: Number(data.subtotal),
+      timestamp: new Date(),
+    };
+
+    await this.processBatch([orderData]);
+    
+    return { message: 'Замовлення успішно створено та розраховано' };
+  }
+
   private async processBatch(batch: any[]) {
     const jsonBatch = JSON.stringify(batch);
 

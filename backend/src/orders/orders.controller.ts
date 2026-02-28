@@ -6,12 +6,14 @@ import {
   BadRequestException,
   Get,
   Query,
+  Body,
   Res,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { OrdersService } from './orders.service';
 import { GetOrdersFilterDto } from './dto/getOrdersFilterDto';
+import { CreateManualOrderDto } from './dto/createManualOrderDto';
 
 @Controller('orders')
 export class OrdersController {
@@ -41,6 +43,14 @@ export class OrdersController {
   @Get()
   async getOrders(@Query() query: GetOrdersFilterDto) {
     return this.ordersService.getOrders(query);
+  }
+
+  @Post()
+  async createManualOrder(@Body() body: CreateManualOrderDto) {
+    if (!body.lat || !body.lon || !body.subtotal) {
+      throw new BadRequestException("Усі поля (lat, lon, subtotal) є обов'язковими");
+    }
+    return this.ordersService.createManualOrder(body);
   }
 
   @Get('heatmap')
