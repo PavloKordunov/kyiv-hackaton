@@ -209,7 +209,8 @@ useEffect(()=>{
           </div>
         </div>
         </div>
-        <RecentActivity activities={activities} />
+
+        <RecentActivity />
       </main>
     </div>
   );

@@ -23,30 +23,20 @@ const AdminSidebar = () => {
 
   return (
     <aside className="fixed left-0 top-0 h-screen w-64 bg-accentColor text-white flex flex-col shadow-xl z-50">
-      <div className="flex items-center justify-between w-full p-6 border-b border-white/10">
+      <div className="flex items-center justify-between w-full pl-4 pr-12 py-6 border-b border-white/10">
         <div className="flex items-center gap-2">
-          <div className="w-30 h-10 rounded-full flex items-center justify-center shrink-0">
+          <div className="h-10 rounded-full flex items-center justify-center shrink-0">
             <Image
-              src="/logoFooter.svg"
+              src="/logoFooter.png"
               alt="Logo Icon"
               unoptimized
-              width={80}
+              width={60}
               height={60}
               className="object-contain"
             />
           </div>
-
-          {/* <div className="relative h-8 w-[80px]">
-                        <Image
-                            src="/logo3.svg"
-                            alt="Mollis Name"
-                            unoptimized
-                            fill
-                            className="object-contain object-left"
-                        />
-                    </div> */}
         </div>
-        <p className="text-[10px] font-medium text-white/50 text-right leading-tight  tracking-wider">
+        <p className="text-base font-semibold text-white/50 text-right leading-tight tracking-wider">
           Адмін панель
         </p>
       </div>

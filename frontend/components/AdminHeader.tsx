@@ -24,7 +24,7 @@ const AdminHeader = ({ title, subtitle }: AdminHeaderProps) => {
           <p className="text-sm font-bold text-[#1F2937] leading-none">
             Адміністратор
           </p>
-          <p className="text-xs text-[#6B7280] mt-1">admin@mollis.ua</p>
+          <p className="text-xs text-[#6B7280] mt-1">admin@better.me</p>
         </div>
       </div>
     </header>
