@@ -42,30 +42,30 @@
 
 ### Крок 1. Створіть змінні середовища та встановіть залежності (Backend), запустіть бекенд
 1. Перейдіть у папку бекенду:
-   cd backend
+   `cd backend`
 
 2. Встановіть залежності
-   npm install
+   `npm install`
    
 3. Створіть файл .env з наступним вмістом:
-   DATABASE_URL="postgresql://postgres.oulncqilmvzqqpwhsnhl:71xmKkiRwx8uUZSp@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-   DIRECT_URL="postgresql://postgres.oulncqilmvzqqpwhsnhl:71xmKkiRwx8uUZSp@aws-1-eu-west-1.pooler.supabase.com:5432/postgres"
+   `DATABASE_URL="postgresql://postgres.oulncqilmvzqqpwhsnhl:71xmKkiRwx8uUZSp@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+   DIRECT_URL="postgresql://postgres.oulncqilmvzqqpwhsnhl:71xmKkiRwx8uUZSp@aws-1-eu-west-1.pooler.supabase.com:5432/postgres"`
 
 4. Запустіть бекенд
-   npm run start:dev
+   `npm run start:dev`
 
 ### Крок 2. Створіть змінні середовища та встановіть залежності (Frontend)
 1. Створіть новий термінал та перейдіть у папку фронтенду:
-   cd frontend
+   `cd frontend`
 
 2. Створіть файл .env.local у папці Frontend з наступним вмістом:
-   NEXT_PUBLIC_API_URL="http://localhost:8080"
+   `NEXT_PUBLIC_API_URL="http://localhost:8080"`
 
 3. Встановіть залежності
-   npm install 
+   `npm install` 
 
 4. Запустіть фронтенд
-   npm run dev
+   `npm run dev`
 
 ### Крок 3. Увійдіть в акаунт з наступними даними:
 логін - qwe@qwe.com
