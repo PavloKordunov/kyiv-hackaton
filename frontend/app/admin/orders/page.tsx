@@ -1,31 +1,24 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
 import {
   UploadCloud,
   Plus,
   Download,
   Search,
   Filter,
-  Calendar,
   MapPin,
-  ChevronDown,
   MoreHorizontal,
   Box,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  X,
   Loader2,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import AdminHeader from "@/components/AdminHeader";
-import { useEffect, useRef, useState } from "react";
 import ImportModal from "@/components/ImportModal";
 import ReportModal from "@/components/ReportModal";
 import ManualOrderModal from "@/components/ManualOrderModal";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Select, { components } from "react-select";
 import ReactPaginate from "react-paginate";
 import { counties } from "@/data/counties";
@@ -37,7 +30,8 @@ const countyOptions = counties.map((county) => ({
   label: county,
 }));
 
-export default function OrdersPage() {
+// 1. ЗМІНА: Перейменували основну функцію і прибрали 'export default'
+function OrdersPageContent() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
@@ -65,10 +59,9 @@ export default function OrdersPage() {
       setIsLoading(true);
       try {
         const queryString = searchParams.toString();
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-        const response = await fetch(
-          `${API_URL}/api/orders?${queryString}`,
-        );
+        const API_URL =
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+        const response = await fetch(`${API_URL}/api/orders?${queryString}`);
         const result = await response.json();
         if (result.data) {
           setOrders(result.data);
@@ -339,7 +332,7 @@ export default function OrdersPage() {
                             {order.id}
                           </div>
                           <div className="text-xs text-gray-500 mt-0.5">
-                            {order.timestamp.slice(0, 16).replace("T", ", ")}
+                            {order.timestamp?.slice(0, 16).replace("T", ", ")}
                           </div>
                         </div>
                       </div>
@@ -347,7 +340,7 @@ export default function OrdersPage() {
 
                     <td className="px-6 py-4">
                       <div className="text-sm text-gray-900">
-                        {order?.jurisdictions[0]}
+                        {order?.jurisdictions?.[0]}
                       </div>
                       <div className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
                         <MapPin className="w-3 h-3" />
@@ -446,5 +439,19 @@ export default function OrdersPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function OrdersPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center w-full h-screen bg-[#F9FAFB]">
+          <Loader2 className="w-8 h-8 text-accentColor animate-spin" />
+        </div>
+      }
+    >
+      <OrdersPageContent />
+    </Suspense>
   );
 }
