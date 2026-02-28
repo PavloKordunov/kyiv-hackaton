@@ -41,8 +41,10 @@ model Order {
   total_amount       Decimal  @db.Decimal(10, 2)
   breakdown          Json
   jurisdictions      String[]
-  timestamp          DateTime @default(now()) @db.Timestamptz(6)
-  status             Boolean  @default(true)
+
+  status             Boolean   @default(true)
+  
+  timestamp          DateTime @default(now()) @db.Timestamptz()
 
   @@map("orders")
 }
