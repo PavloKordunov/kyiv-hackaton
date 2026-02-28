@@ -24,6 +24,7 @@ export default function LoginPage(){
             })
             if(res.ok){
                 const data=await res.json()
+                document.cookie = `token=${data.token}; path=/; max-age=86400;`;
                 router.push('/admin')
             }
 
