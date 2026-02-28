@@ -48,10 +48,10 @@
    `npm install`
    
 3. Створіть файл .env з наступним вмістом:
-   `DATABASE_URL="postgresql://postgres.oulncqilmvzqqpwhsnhl:71xmKkiRwx8uUZSp@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
-   DIRECT_URL="postgresql://postgres.oulncqilmvzqqpwhsnhl:71xmKkiRwx8uUZSp@aws-1-eu-west-1.pooler.supabase.com:5432/postgres"`
-
-4. Запустіть бекенд
+   `DATABASE_URL="postgresql://postgres.oulncqilmvzqqpwhsnhl:71xmKkiRwx8uUZSp@aws-1-eu-west-1.pooler.supabase.com:6543/postgres?pgbouncer=true"`
+   `DIRECT_URL="postgresql://postgres.oulncqilmvzqqpwhsnhl:71xmKkiRwx8uUZSp@aws-1-eu-west-1.pooler.supabase.com:5432/postgres"`
+   
+5. Запустіть бекенд
    `npm run start:dev`
 
 ### Крок 2. Створіть змінні середовища та встановіть залежності (Frontend)
